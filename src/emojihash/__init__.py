@@ -64,7 +64,8 @@ def emojihash(value: EmojiHashable, length: int = 1) -> str:
       always treated as text, never as a file path
     - `bytes`, `bytearray`, `memoryview`: the raw bytes
     - Numbers: the UTF-8 encoding of `str(value)`, so `42` matches `"42"` but `1` and `1.0`
-      differ
+      differ. `bool` is an `int` subclass and hashes as `"True"` or `"False"`, not as `1`
+      or `0`
     - `os.PathLike` (e.g. `pathlib.Path`): the file's contents, read in binary mode
     - Open file objects: the remaining contents from the current position. Text-mode files
       are re-encoded as UTF-8, so newline translation can make them differ from the same

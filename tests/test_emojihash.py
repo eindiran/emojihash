@@ -71,6 +71,11 @@ def test_numbers_hash_as_their_str() -> None:
     assert emojihash(Fraction(1, 3)) == emojihash("1/3")
 
 
+def test_bool_hashes_as_its_name() -> None:
+    assert emojihash(True) == emojihash("True")
+    assert emojihash(False) == emojihash("False")
+
+
 def test_files_hash_their_contents(tmp_path: Path) -> None:
     path = tmp_path / "data.bin"
     path.write_bytes(b"hello")

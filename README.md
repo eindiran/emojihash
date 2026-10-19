@@ -48,6 +48,7 @@ emojihash("hello", 4)  # four emoji; starts with emojihash("hello")
 | `str` | UTF-8 encoding; a `str` is never treated as a path |
 | `bytes`, `bytearray`, `memoryview` | raw bytes |
 | `int`, `float`, `complex`, `Decimal`, `Fraction` | UTF-8 of `str(value)`, so `1` and `1.0` differ |
+| `bool` | UTF-8 of `"True"` or `"False"` (an `int` subclass, but `str()` differs from `1`/`0`) |
 | `os.PathLike` | file contents, binary mode |
 | open file object | remaining contents; text-mode files are re-encoded as UTF-8 |
 

@@ -1,7 +1,7 @@
 [project]
 name = "emojihash"
 version = "0.1.0"
-description = "Map arbitrary input to a single emoji. Not cryptographically secure."
+description = "Map arbitrary input to a short string of emoji. Not cryptographically secure."
 readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE"]
