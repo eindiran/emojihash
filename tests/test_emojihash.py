@@ -21,11 +21,39 @@ def test_table_has_1024_unique_single_code_point_emoji() -> None:
 
 @pytest.mark.parametrize(
     ("value", "index"),
-    [("", 510), ("hello", 205), ("emojihash", 867), (42, 509), (3.14, 514)],
+    [("", 282), ("hello", 72), ("emojihash", 174), (42, 647), (3.14, 164)],
 )
 def test_output_is_stable(value: str | int | float, index: int) -> None:
     # Pinned so any change to the table or the hashing scheme fails loudly.
     assert emojihash(value) == EMOJI[index]
+
+
+def test_multi_emoji_output_is_stable() -> None:
+    # 40 bits of SHAKE256("hello") split into four 10-bit indexes, most significant first.
+    assert emojihash("hello", 4) == "".join(EMOJI[i] for i in (72, 832, 470, 740))
+
+
+@pytest.mark.parametrize("length", [1, 2, 3, 8, 100])
+def test_length_sets_emoji_count(length: int) -> None:
+    assert len(emojihash("hello", length)) == length
+
+
+def test_shorter_result_is_prefix_of_longer() -> None:
+    longest = emojihash("hello", 64)
+    for n in range(1, 64):
+        assert longest.startswith(emojihash("hello", n))
+
+
+def test_length_applies_to_files(tmp_path: Path) -> None:
+    path = tmp_path / "data.bin"
+    path.write_bytes(b"hello")
+    assert emojihash(path, 5) == emojihash("hello", 5)
+
+
+@pytest.mark.parametrize("length", [0, -1])
+def test_non_positive_length_raises(length: int) -> None:
+    with pytest.raises(ValueError, match="length must be >= 1"):
+        emojihash("hello", length)
 
 
 def test_text_and_bytes_like_match() -> None:
@@ -97,6 +125,18 @@ def test_cli_files(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     captured = capsys.readouterr()
     assert captured.out == f"{emojihash('hello')}\t{path}\n"
     assert str(missing) in captured.err
+
+
+def test_cli_length(capsys: pytest.CaptureFixture[str]) -> None:
+    assert main(["-n", "3", "hello"]) == 0
+    assert capsys.readouterr().out == f"{emojihash('hello', 3)}\n"
+
+
+@pytest.mark.parametrize("bad", ["0", "-2", "x"])
+def test_cli_rejects_bad_length(bad: str) -> None:
+    with pytest.raises(SystemExit) as exc:
+        main(["-n", bad, "hello"])
+    assert exc.value.code == 2
 
 
 def test_cli_stdin(monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
