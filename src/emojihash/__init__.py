@@ -1,13 +1,14 @@
 """
 Map arbitrary input to a single emoji.
 
-The input is converted to bytes, hashed with BLAKE2b, and the first digest byte indexes the
-256-entry table in `EMOJI`. Output is stable across processes, platforms, and Python
-versions, unlike the builtin `hash()`, which is salted per process for `str` and `bytes`.
+The input is converted to bytes, hashed with BLAKE2b, and the low 10 bits of a 2-byte
+digest index the 1024-entry table in `EMOJI`. Output is stable across processes, platforms,
+and Python versions, unlike the builtin `hash()`, which is salted per process for `str` and
+`bytes`.
 
-NOT CRYPTOGRAPHICALLY SECURE. There are only 256 possible outputs: two unrelated inputs
-match with probability 1/256, and anyone can find an input that maps to a chosen emoji in a
-few hundred tries. Use it for visual tagging (log lines, shell prompts, build IDs, hosts),
+NOT CRYPTOGRAPHICALLY SECURE. There are only 1024 possible outputs: two unrelated inputs
+match with probability 1/1024, and anyone can find an input that maps to a chosen emoji in
+about a thousand tries. Use it for visual tagging (log lines, shell prompts, build IDs, hosts),
 never for authentication, integrity checks, or key verification.
 """
 
@@ -60,7 +61,7 @@ def emojihash(value: EmojiHashable) -> str:
 
     Raises `TypeError` for any other type, and `OSError` if a path cannot be read.
     """
-    digest = hashlib.blake2b(digest_size=1)
+    digest = hashlib.blake2b(digest_size=2)
     if isinstance(value, str):
         digest.update(value.encode())
     elif isinstance(value, bytes | bytearray | memoryview):
@@ -74,7 +75,8 @@ def emojihash(value: EmojiHashable) -> str:
         _update_from_stream(digest, value)
     else:
         raise TypeError(f"emojihash() does not support {type(value).__name__}")
-    return EMOJI[digest.digest()[0]]
+    # len(EMOJI) is a power of two, so the modulo takes the low bits with no bias.
+    return EMOJI[int.from_bytes(digest.digest()) % len(EMOJI)]
 
 
 def _update_from_stream(digest: hashlib.blake2b, stream: IO[bytes] | IO[str]) -> None:

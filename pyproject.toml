@@ -54,6 +54,8 @@ ignore = [
 [tool.ruff.lint.per-file-ignores]
 # Test functions are self-describing; magic values are the expected outputs.
 "tests/**" = ["D103", "PLR2004"]
+# The table includes emoji that resemble ASCII, e.g. HEAVY PLUS SIGN.
+"src/emojihash/_table.py" = ["RUF001"]
 
 [tool.ty.environment]
 extra-paths = ["src"]

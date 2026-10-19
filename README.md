@@ -4,8 +4,8 @@ Map an arbitrary string, number, byte string, or file to a single emoji.
 
 ## Not cryptographically secure
 
-There are only 256 possible outputs. Two unrelated inputs share an emoji with probability
-1/256, and an input that maps to a chosen emoji can be found in a few hundred tries. Use it
+There are only 1024 possible outputs. Two unrelated inputs share an emoji with probability
+1/1024, and an input that maps to a chosen emoji can be found in about a thousand tries. Use it
 for visual tagging: log lines, shell prompts, build IDs, telling hosts apart at a glance. Do
 not use it for authentication, integrity checks, or key verification.
 
@@ -39,7 +39,7 @@ with open("notes.txt", "rb") as f:
 | `os.PathLike` | file contents, binary mode |
 | open file object | remaining contents; text-mode files are re-encoded as UTF-8 |
 
-Any other type raises `TypeError`. `EMOJI` exposes the 256-entry table.
+Any other type raises `TypeError`. `EMOJI` exposes the 1024-entry table.
 
 ## CLI
 
@@ -60,9 +60,13 @@ if any file could not be read.
 
 ## How it works
 
-BLAKE2b with a 1-byte digest over the input bytes; the byte indexes the table in
+BLAKE2b with a 2-byte digest over the input bytes; the low 10 bits index the table in
 `src/emojihash/_table.py`. Output is stable across processes, platforms, and Python
 versions. Changing the table order changes every mapping.
+
+The table holds every single-code-point emoji with default emoji presentation as of Unicode
+13.0 (2020), minus 89 lookalikes (clock faces, moon phases, zodiac signs, and similar). Fonts
+from before 2020 may be missing some entries.
 
 ## Development
 

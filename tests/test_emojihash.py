@@ -12,15 +12,16 @@ from emojihash import EMOJI, emojihash
 from emojihash.cli import main
 
 
-def test_table_has_256_unique_single_code_point_emoji() -> None:
-    assert len(EMOJI) == 256
-    assert len(set(EMOJI)) == 256
-    assert all(len(e) == 1 and ord(e) >= 0x1F300 for e in EMOJI)
+def test_table_has_1024_unique_single_code_point_emoji() -> None:
+    assert len(EMOJI) == 1024
+    assert len(set(EMOJI)) == 1024
+    # U+231A WATCH is the lowest Emoji_Presentation code point.
+    assert all(len(e) == 1 and ord(e) >= 0x231A for e in EMOJI)
 
 
 @pytest.mark.parametrize(
     ("value", "index"),
-    [("", 46), ("hello", 41), ("emojihash", 63), (42, 231), (3.14, 45)],
+    [("", 510), ("hello", 205), ("emojihash", 867), (42, 509), (3.14, 514)],
 )
 def test_output_is_stable(value: str | int | float, index: int) -> None:
     # Pinned so any change to the table or the hashing scheme fails loudly.
